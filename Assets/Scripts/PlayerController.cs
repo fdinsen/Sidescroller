@@ -105,8 +105,8 @@ public class PlayerController : MonoBehaviour
     }
 
     private void CheckGround() {
-        //Casts a ray down 1 unit to check if the player is grounded
-        isOnGround = Physics.Raycast(transform.position, dwn, 1, layerMask);
+        //Casts a ray down 1.2 unit to check if the player is grounded
+        isOnGround = Physics.Raycast(transform.position, dwn, 1.2f, layerMask);
     }
 
 }
