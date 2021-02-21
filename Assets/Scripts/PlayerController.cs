@@ -73,7 +73,7 @@ public class PlayerController : MonoBehaviour
             secondChanceCooldown -= Time.deltaTime;
 
             //DoJump
-            if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W))) {
+            if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))) {
                 rigidbody.AddForce(new Vector3(0, jumpForce, 0));
             }
         }
