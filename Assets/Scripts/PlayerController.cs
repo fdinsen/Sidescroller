@@ -4,109 +4,98 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    //Serialized Variables
-    [SerializeField] private float speed = 1;
-    [SerializeField] private float jumpForce = 1;
-    [SerializeField] private CameraController cam;
-    [SerializeField] private float secondChanceTime = 1f;
+    // Serialized variables
+    [SerializeField] private float movementSpeeed = 10;
+    [SerializeField] private CameraController cameraController;
 
-    private Rigidbody rigidbody;
+    private Rigidbody rb;
 
-    //Movement Variables
-    private bool isOnGround = false;
+    // Jump related
+    private float _jumpLastTime;
+    [SerializeField] private float jumpTimeDisabled = 1;
+    [SerializeField] private float jumpForce = 300;
+
+    // Movement related
+    private int currentPlayerRot = 0;
     private bool directionIsX = true;
-    private int currentRotation = 0;
-    private float secondChanceCooldown = 0;
 
-    //Raycasting Variables
-    Vector3 dwn;
-    readonly int layerMask = 1 << 3;
+    // IsOnGround related
+    private readonly int _mask = 1 << 3;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        rigidbody = GetComponent<Rigidbody>();
-        dwn = transform.TransformDirection(Vector3.down);
+    // Called before the first frame
+    private void Start() {
+        rb = GetComponent<Rigidbody>();
+        _jumpLastTime = Time.time;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        Move();
-        CheckGround();
-    }
-
-    private void OnTriggerEnter(Collider other) {
-        MoveToNextArea(other);
-    }
-
-    private void Move() {
+    // Called once per frame
+    private void Update() {
         Jump();
+        Movement();
+    }
 
-        //For each direction the player can move in, do move
-        if (currentRotation == 0) {
-            float h = Input.GetAxisRaw("Horizontal");
-            gameObject.transform.position = new Vector3(transform.position.x + (h * speed) * Time.deltaTime,
-               transform.position.y, transform.position.z);
-        } else if (currentRotation == -90) {
-            float h = Input.GetAxisRaw("Horizontal");
-            gameObject.transform.position = new Vector3(transform.position.x,
-               transform.position.y, transform.position.z + (h * speed) * Time.deltaTime);
-        } else if (currentRotation == 90) {
-            float h = Input.GetAxisRaw("Horizontal") * -1;
-            gameObject.transform.position = new Vector3(transform.position.x,
-               transform.position.y, transform.position.z + (h * speed) * Time.deltaTime);
-        } else if (currentRotation == 180) {
-            float h = Input.GetAxisRaw("Horizontal") * -1;
-            gameObject.transform.position = new Vector3(transform.position.x + (h * speed) * Time.deltaTime,
-               transform.position.y, transform.position.z);
+    // Called based on the trigger
+    private void OnTriggerEnter(Collider other) {
+        if(other.gameObject.CompareTag("Area")) {
+            MoveToNextArea(other);
         }
     }
 
-    private void Jump() {
-        if (isOnGround) {
-            //Reset cooldown timer if player is on ground
-            secondChanceCooldown = secondChanceTime;
-        }
-        if (secondChanceCooldown > 0) {
-            //Count down timer for second chance to jump
-            secondChanceCooldown -= Time.deltaTime;
-
-            //DoJump
-            if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))) {
-                rigidbody.AddForce(new Vector3(0, jumpForce, 0));
-            }
-        }
-    }
-
+    // Handles the camera POV
     private void MoveToNextArea(Collider other) {
-        if (other.gameObject.CompareTag("Area")) {
+        AreaInfo areaInfo = other.GetComponent<AreaInfo>();
+        Vector3 targetCamPos = areaInfo.GetCameraPosition();
+        int targetCamRot = areaInfo.GetCameraRotation();
 
-            AreaInfo info = other.GetComponent<AreaInfo>();
-            Vector3 targetPosition = info.GetCameraPosition();
-            int targetRotation = info.GetCameraRotation();
+        cameraController.MoveCamera(targetCamPos);
+        cameraController.RotateCamera(targetCamRot);
 
-            cam.MoveCamera(targetPosition);
-            cam.RotateCamera(targetRotation);
+        if(currentPlayerRot != targetCamRot) {
+            Vector3 newPos;
 
-            if (targetRotation != currentRotation) {
-                if (directionIsX) {
-                    gameObject.transform.position
-                        = new Vector3(other.gameObject.transform.position.x, transform.position.y, transform.position.z);
-                } else {
-                    gameObject.transform.position
-                        = new Vector3(transform.position.x, transform.position.y, other.gameObject.transform.position.z);
-                }
-
-                directionIsX = !directionIsX;
-                currentRotation = targetRotation;
+            if(directionIsX) {
+                newPos = new Vector3(other.gameObject.transform.position.x, transform.position.y, transform.position.z);
+            } else {
+                newPos = new Vector3(transform.position.x, transform.position.y, other.gameObject.transform.position.z);
             }
+
+            gameObject.transform.position = newPos;
+
+            directionIsX = !directionIsX;
+            currentPlayerRot = targetCamRot;
         }
     }
 
-    private void CheckGround() {
-        //Casts a ray down 1 unit to check if the player is grounded
-        isOnGround = Physics.Raycast(transform.position, dwn, 1, layerMask);
+    // Handles the players ability to jump
+    private void Jump() {
+        bool jumpRequested = Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow);
+        bool allowedByTimer = Time.time - _jumpLastTime > jumpTimeDisabled;
+        
+        if(jumpRequested && IsOnGround() && allowedByTimer) {
+            _jumpLastTime = Time.time;
+            rb.AddForce(new Vector3(0, jumpForce, 0));
+        }
+    }
+
+    private bool IsOnGround() {
+        return Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), 1.1f, _mask);
+    }
+
+    // Handles the players ability to move
+    private void Movement() {
+        float horizontal = Input.GetAxisRaw("Horizontal");
+
+        if(currentPlayerRot == 90 || currentPlayerRot == 180) {
+            horizontal *= -1;
+        }
+
+        if(currentPlayerRot == 0 || currentPlayerRot == 180) {
+            gameObject.transform.position = new Vector3(transform.position.x + (horizontal * movementSpeeed) * Time.deltaTime, transform.position.y, transform.position.z);
+        } else if(currentPlayerRot == -90 || currentPlayerRot == 90) {
+            gameObject.transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z + (horizontal * movementSpeeed) * Time.deltaTime);
+        } else {
+            Debug.Log("Player Movement Error: Unknown player rotation: " + horizontal);
+        }
     }
 
 }
