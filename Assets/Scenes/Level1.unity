@@ -4323,7 +4323,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3390248182250305001, guid: 00f7d760d72f71e43a5cb2b071aefa2d, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3390248182250305003, guid: 00f7d760d72f71e43a5cb2b071aefa2d, type: 3}
       propertyPath: m_RootOrder
