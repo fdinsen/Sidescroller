@@ -4,38 +4,36 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    //Serialized Variables
     [SerializeField] private float speed = 1;
     [SerializeField] private float jumpForce = 1;
     [SerializeField] private CameraController cam;
+    [SerializeField] private float secondChanceTime = 1f;
 
     private Rigidbody rigidbody;
 
+    //Movement Variables
     private bool isOnGround = false;
     private bool directionIsX = true;
     private int currentRotation = 0;
+    private float secondChanceCooldown = 0;
+
+    //Raycasting Variables
+    Vector3 dwn;
+    readonly int layerMask = 1 << 3;
 
     // Start is called before the first frame update
     void Start()
     {
         rigidbody = GetComponent<Rigidbody>();
+        dwn = transform.TransformDirection(Vector3.down);
     }
 
     // Update is called once per frame
     void Update()
     {
         Move();
-    }
-
-    private void OnCollisionStay(Collision collision) {
-        if (collision.collider.gameObject.CompareTag("Ground")) {
-            isOnGround = true;
-        }
-    }
-
-    private void OnCollisionExit(Collision collision) {
-        if (collision.collider.gameObject.CompareTag("Ground")) {
-            isOnGround = false;
-        }
+        CheckGround();
     }
 
     private void OnTriggerEnter(Collider other) {
@@ -43,31 +41,46 @@ public class PlayerController : MonoBehaviour
     }
 
     private void Move() {
-        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W)) && isOnGround) {
-            rigidbody.AddForce(new Vector3(0, jumpForce, 0));
-        }
+        Jump();
 
+        //For each direction the player can move in, do move
         if (currentRotation == 0) {
             float h = Input.GetAxisRaw("Horizontal");
             gameObject.transform.position = new Vector3(transform.position.x + (h * speed) * Time.deltaTime,
                transform.position.y, transform.position.z);
-        } else if(currentRotation == -90) {
+        } else if (currentRotation == -90) {
             float h = Input.GetAxisRaw("Horizontal");
             gameObject.transform.position = new Vector3(transform.position.x,
                transform.position.y, transform.position.z + (h * speed) * Time.deltaTime);
-        } else if(currentRotation == 90) {
-            float h = Input.GetAxisRaw("Horizontal") * - 1;
+        } else if (currentRotation == 90) {
+            float h = Input.GetAxisRaw("Horizontal") * -1;
             gameObject.transform.position = new Vector3(transform.position.x,
                transform.position.y, transform.position.z + (h * speed) * Time.deltaTime);
-        } else if(currentRotation == 180) {
+        } else if (currentRotation == 180) {
             float h = Input.GetAxisRaw("Horizontal") * -1;
             gameObject.transform.position = new Vector3(transform.position.x + (h * speed) * Time.deltaTime,
                transform.position.y, transform.position.z);
         }
     }
 
+    private void Jump() {
+        if (isOnGround) {
+            //Reset cooldown timer if player is on ground
+            secondChanceCooldown = secondChanceTime;
+        }
+        if (secondChanceCooldown > 0) {
+            //Count down timer for second chance to jump
+            secondChanceCooldown -= Time.deltaTime;
+
+            //DoJump
+            if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W))) {
+                rigidbody.AddForce(new Vector3(0, jumpForce, 0));
+            }
+        }
+    }
+
     private void MoveToNextArea(Collider other) {
-        if (other.gameObject.tag.Equals("Area")) {
+        if (other.gameObject.CompareTag("Area")) {
 
             AreaInfo info = other.GetComponent<AreaInfo>();
             Vector3 targetPosition = info.GetCameraPosition();
@@ -90,4 +103,10 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+
+    private void CheckGround() {
+        //Casts a ray down 1 unit to check if the player is grounded
+        isOnGround = Physics.Raycast(transform.position, dwn, 1, layerMask);
+    }
+
 }
