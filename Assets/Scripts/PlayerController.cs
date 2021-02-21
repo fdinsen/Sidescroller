@@ -34,6 +34,7 @@ public class PlayerController : MonoBehaviour
     {
         Move();
         CheckGround();
+        Debug.Log(secondChanceCooldown);
     }
 
     private void OnTriggerEnter(Collider other) {
@@ -67,6 +68,8 @@ public class PlayerController : MonoBehaviour
         if (isOnGround) {
             //Reset cooldown timer if player is on ground
             secondChanceCooldown = secondChanceTime;
+        }else {
+            secondChanceCooldown = 0;
         }
         if (secondChanceCooldown > 0) {
             //Count down timer for second chance to jump
@@ -105,8 +108,8 @@ public class PlayerController : MonoBehaviour
     }
 
     private void CheckGround() {
-        //Casts a ray down 1 unit to check if the player is grounded
-        isOnGround = Physics.Raycast(transform.position, dwn, 1, layerMask);
+        //Casts a ray down 1.1 unit to check if the player is grounded
+        isOnGround = Physics.Raycast(transform.position, dwn, 1.1f, layerMask);
     }
 
 }
