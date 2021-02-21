@@ -75,7 +75,7 @@ public class PlayerController : MonoBehaviour
             //Count down timer for second chance to jump
             secondChanceCooldown -= Time.deltaTime;
 
-            //DoJump and reset secondchance to disallow further jumping
+            //DoJump
             if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))) {
                 rigidbody.AddForce(new Vector3(0, jumpForce, 0));
             }
