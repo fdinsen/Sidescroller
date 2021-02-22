@@ -43,6 +43,12 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void OnCollisionEnter(Collision collision) {
+        if (collision.gameObject.CompareTag("Enemy")) {
+            StartCoroutine(Die());
+        }
+    }
+
     public IEnumerator Die() {
         GameObject deathAnimation = Instantiate(deathParticleSystem, transform);
         gameObject.GetComponent<Renderer>().enabled = false;
