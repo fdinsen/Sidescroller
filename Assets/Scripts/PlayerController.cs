@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
     // Serialized variables
     [SerializeField] private float movementSpeeed = 10;
     [SerializeField] private CameraController cameraController;
+    [SerializeField] private GameObject deathParticleSystem;
 
     private Rigidbody rb;
 
@@ -39,6 +41,14 @@ public class PlayerController : MonoBehaviour
         if(other.gameObject.CompareTag("Area")) {
             MoveToNextArea(other);
         }
+    }
+
+    public IEnumerator Die() {
+        GameObject deathAnimation = Instantiate(deathParticleSystem, transform);
+        gameObject.GetComponent<Renderer>().enabled = false;
+        yield return new WaitForSeconds(1);
+        Destroy(deathAnimation);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     // Handles the camera POV
@@ -90,8 +100,12 @@ public class PlayerController : MonoBehaviour
         }
 
         if(currentPlayerRot == 0 || currentPlayerRot == 180) {
+            //float moveBy = (horizontal * movementSpeeed) * Time.deltaTime;
+            //rb.velocity = new Vector3(moveBy, rb.velocity.y, rb.velocity.z);
             gameObject.transform.position = new Vector3(transform.position.x + (horizontal * movementSpeeed) * Time.deltaTime, transform.position.y, transform.position.z);
         } else if(currentPlayerRot == -90 || currentPlayerRot == 90) {
+            //float moveBy = (horizontal * movementSpeeed) * Time.deltaTime;
+            //rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y, moveBy);
             gameObject.transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z + (horizontal * movementSpeeed) * Time.deltaTime);
         } else {
             Debug.Log("Player Movement Error: Unknown player rotation: " + horizontal);
