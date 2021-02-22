@@ -125,7 +125,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d227cca23e886884c8eb72b53690a3b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 8
+  movementSpeeed: 10
+  cameraController: {fileID: 1006908247444802652, guid: 8177442c33379554d9858668e70fcad0, type: 3}
+  deathParticleSystem: {fileID: 100018, guid: a40b64bf23366dc42a892af2c6ff6140, type: 3}
+  jumpTimeDisabled: 1
   jumpForce: 400
-  cam: {fileID: 0}
-  secondChanceTime: 0.2
