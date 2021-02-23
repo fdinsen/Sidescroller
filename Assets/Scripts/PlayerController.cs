@@ -20,6 +20,7 @@ public class PlayerController : MonoBehaviour
     // Movement related
     private int currentPlayerRot = 0;
     private bool directionIsX = true;
+    private bool canMove = true;
 
     // IsOnGround related
     private readonly int _mask = 1 << 3;
@@ -32,8 +33,10 @@ public class PlayerController : MonoBehaviour
 
     // Called once per frame
     private void Update() {
-        Jump();
-        Movement();
+        if(canMove) {
+            Jump();
+            Movement();
+        }
     }
 
     // Called based on the trigger
@@ -52,9 +55,14 @@ public class PlayerController : MonoBehaviour
     public IEnumerator Die() {
         GameObject deathAnimation = Instantiate(deathParticleSystem, transform);
         gameObject.GetComponent<Renderer>().enabled = false;
+        StopMovement();
         yield return new WaitForSeconds(1);
         Destroy(deathAnimation);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void StopMovement() {
+        canMove = false;
     }
 
     public void PushUp(float pushForce) {
