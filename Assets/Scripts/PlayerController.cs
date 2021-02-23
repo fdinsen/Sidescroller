@@ -57,6 +57,11 @@ public class PlayerController : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
+    public void PushUp(float pushForce) {
+        rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+        rb.AddForce(new Vector3(0, pushForce, 0));
+    }
+
     // Handles the camera POV
     private void MoveToNextArea(Collider other) {
         AreaInfo areaInfo = other.GetComponent<AreaInfo>();
