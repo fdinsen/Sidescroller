@@ -34,10 +34,7 @@ public class Enemy : MonoBehaviour
     }
 
     private void OnCollisionEnter(Collision collision) {
-        if(collision.gameObject.CompareTag("Ground")) {
-            movementSpeed = movementSpeed * -1;
-        }
-
+        movementSpeed = movementSpeed * -1;
     }
 
     private void OnTriggerEnter(Collider other) {

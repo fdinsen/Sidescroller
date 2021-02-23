@@ -142,7 +142,7 @@ Halo:
   m_Color:
     serializedVersion: 2
     rgba: 4278190335
-  m_Size: 1.5
+  m_Size: 2
 --- !u!65 &5324850302575656144
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -154,5 +154,5 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.64, y: 0.62, z: 0.8}
+  m_Size: {x: 0.64, y: 0.92, z: 0.8}
   m_Center: {x: 0, y: 0.48, z: 0}
